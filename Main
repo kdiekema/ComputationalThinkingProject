@@ -1,0 +1,35 @@
+from utilities import get_change, maxx, get_history, dates, opens
+from matplotlib import pyplot as plt
+
+tickers = ['PTGX','KOD', 'JNCE', 'ABUS', 'ELOX'] #top 5 gainers for the healthcare industry from NASDAQ
+changelist = [] #empty list for scraped data 
+
+for ticker in tickers: #for loop creates a list of tickers with their current price change percentage 
+    change = get_change(ticker) #calls function 1 to scrape html data to get price change percent
+    changeNum = change[0:-1:1] 
+    changeAsFloat = float(changeNum)
+    changelist.append([ticker, changeAsFloat])
+
+maximum = maxx(changelist)  #calls function 2 to find company with largest postive price change percent   
+
+
+maximumticker = maximum[0] #gets only ticker for company with largest percentage
+history = get_history(maximumticker) #calls function 3 to scrape html table of historical stock data
+    
+full_list = history.split("   ") #splits scraped data by date
+full_list.pop(0) #removes first item of list because it is empty
+full_list.pop(-1)#removes last item of list because it is empty
+
+
+plt.plot(dates(full_list),opens(full_list))   #calls functions 4 and 5 and plots them using numpy       
+
+plt.xlabel('Date')    #labels x-axis         
+plt.ylabel('Price')  #labels y-axis
+
+plt.title(f'Historical Closing Price for {maximumticker}')  #plot title -- uses maximum ticker variable to display which companies data is being shown
+plt.legend(['Price']) #line label  
+plt.xticks(rotation=90) #rotates date labels for readability 
+plt.savefig('Price History')  #saves output on local computer
+
+
+
