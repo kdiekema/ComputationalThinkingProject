@@ -1,0 +1,51 @@
+from bs4 import BeautifulSoup
+import requests
+import time
+
+
+def get_change(ticker): #function 1 -- finds the price change for 4 designated company -- input is list of tickers
+    url = f'https://quotes.wsj.com/{ticker}'
+    response = requests.get(url)
+    html_doc = response.text
+    soup = BeautifulSoup(html_doc, "lxml")
+    p_tag = soup.find_all('span',class_='cr_num diff_percent')[0]
+    time.sleep(2)
+    return p_tag.text #returns raw scraped data
+
+def maxx(list): # function 2 -- finds the company with largest positive price change of 4 companies -- input is list of all tickers and percent change
+    if not list:
+        raise ValueError('empty sequence') #ensures the list of prices from first function has values
+    maximum = list[0]
+    for i in list:
+        if i[1] > maximum[1]: #if current item in list is greater than maximum, replace maximum with current item
+            maximum = i
+    return maximum #returns list of ticker and percent change for company with max percent change
+
+def get_history(ticker):  #function 3 -- scrapes the historical price data of company with largest positive price change -- input is ticker from list created in function 2
+    url = f'https://quotes.wsj.com/{ticker}/historical-prices'
+    response = requests.get(url)
+    html_doc = response.text
+    soup = BeautifulSoup(html_doc, "lxml")
+    p_tag = soup.find_all('table',class_='cr_dataTable')[1]
+    time.sleep(2)
+    return p_tag.text #returns raw scraped html table data
+
+
+def dates(list):   #function 4 -- puts date information from scraped historical price data into an array for plotting -- input is html table data from function 3
+    datelist = []
+    for i in list:
+        datelist.extend(i.split(' ')[0:1]) #splits list when theres a space and selects first item
+    date = (datelist [0:14]) #selects top 14 items of array for plot readibility
+    date = date[::-1] #reverses array so the plot is in chronological order left to right
+    return date #returs array of dates
+
+def opens(list): #function 5 -- puts open price information from scraped historical price data into an array for plotting-- input is html table data from function 3
+    openlist = []
+    for i in list:
+        openlist.extend(i.split()[1:2]) #splits list when there is a space and selects 2nd item
+    for i in range(0, len(openlist)): 
+        openlist[i] = float(openlist[i]) #converts open price to a float instead of string
+    price = (openlist [0:14]) #selects top 14 items of array for plot readibility
+    price = price[::-1] #reverses array to match date information to be in chronological order
+    return price #returns array of open prices
+
